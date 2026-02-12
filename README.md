@@ -1,3 +1,35 @@
 # Artemr.github.io
 
 # hi?
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube Embed</title>
+  <style>
+    .youtube-window {
+      width: 800px;
+      height: 450px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>YouTube Window</h2>
+
+  <div class="youtube-window">
+    <iframe
+      width="100%"
+      height="100%"
+      src="https://www.youtube.com/embed"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen>
+    </iframe>
+  </div>
+
+</body>
+</html>
