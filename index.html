@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>5 Lane Rhythm Game</title>
+<title>5-Lane Rhythm Game</title>
 
 <style>
   body {
-    background: #0f0f1a;
+    background: #0e0e1a;
     color: white;
     font-family: Arial, sans-serif;
     text-align: center;
@@ -21,30 +21,41 @@
     width: 500px;
     height: 600px;
     margin: auto;
+    display: flex;
     background: #111;
     border: 2px solid #444;
-    display: flex;
   }
 
   .lane {
     flex: 1;
     border-left: 1px solid #333;
     position: relative;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .lane:first-child {
+    border-left: none;
+  }
+
+  .lane.active {
+    background: rgba(255, 255, 255, 0.15);
   }
 
   .block {
     position: absolute;
     width: 100%;
     height: 40px;
-    cursor: pointer;
+    top: -40px;
   }
 
-  #hitLine {
+  #hitZone {
     position: absolute;
     bottom: 100px;
     width: 100%;
-    height: 4px;
-    background: red;
+    height: 60px;
+    border-top: 2px solid red;
+    border-bottom: 2px solid red;
     pointer-events: none;
   }
 </style>
@@ -52,7 +63,7 @@
 
 <body>
 
-<h1>5 Lane Rhythm Game</h1>
+<h1>5-Lane Rhythm Game</h1>
 
 <div id="controls">
   Speed:
@@ -61,7 +72,7 @@
 </div>
 
 <div id="game">
-  <div id="hitLine"></div>
+  <div id="hitZone"></div>
 </div>
 
 <p>
@@ -89,12 +100,37 @@
     speedVal.textContent = speed;
   };
 
-  // Create 5 lanes
+  // Create lanes
   for (let i = 0; i < 5; i++) {
     const lane = document.createElement("div");
     lane.className = "lane";
     game.appendChild(lane);
     lanes.push(lane);
+
+    // Mouse
+    lane.addEventListener("mousedown", () => {
+      lane.classList.add("active");
+      handleLaneClick(i);
+    });
+
+    lane.addEventListener("mouseup", () => {
+      lane.classList.remove("active");
+    });
+
+    lane.addEventListener("mouseleave", () => {
+      lane.classList.remove("active");
+    });
+
+    // Touch
+    lane.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      lane.classList.add("active");
+      handleLaneClick(i);
+    });
+
+    lane.addEventListener("touchend", () => {
+      lane.classList.remove("active");
+    });
   }
 
   function spawnBlock() {
@@ -104,46 +140,53 @@
     const block = document.createElement("div");
     block.className = "block";
     block.style.background = colors[laneIndex];
-    block.style.top = "-40px";
+    block.dataset.y = -40;
 
     lanes[laneIndex].appendChild(block);
-
-    let y = -40;
 
     function fall() {
       if (gameOver) return;
 
+      let y = Number(block.dataset.y);
       y += speed;
+      block.dataset.y = y;
       block.style.top = y + "px";
 
-      // Missed
-      if (y > 560) {
+      if (y > 600) {
         block.remove();
-        misses++;
-        missesEl.textContent = misses;
-        if (misses >= 5) endGame();
+        registerMiss();
         return;
       }
 
       requestAnimationFrame(fall);
     }
 
-    block.onclick = () => {
-      const hitZoneTop = 460;
-      const hitZoneBottom = 540;
-
-      if (y >= hitZoneTop && y <= hitZoneBottom) {
-        score++;
-        scoreEl.textContent = score;
-      } else {
-        misses++;
-        missesEl.textContent = misses;
-        if (misses >= 5) endGame();
-      }
-      block.remove();
-    };
-
     requestAnimationFrame(fall);
+  }
+
+  function handleLaneClick(laneIndex) {
+    if (gameOver) return;
+
+    const block = lanes[laneIndex].querySelector(".block");
+    if (!block) {
+      registerMiss();
+      return;
+    }
+
+    const y = Number(block.dataset.y);
+    if (y >= 460 && y <= 520) {
+      score++;
+      scoreEl.textContent = score;
+      block.remove();
+    } else {
+      registerMiss();
+    }
+  }
+
+  function registerMiss() {
+    misses++;
+    missesEl.textContent = misses;
+    if (misses >= 5) endGame();
   }
 
   function endGame() {
