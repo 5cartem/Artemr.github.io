@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <title>Falling Squares Game</title>
+
 <style>
   body {
     margin: 0;
-    font-family: Arial, sans-serif;
     background: #111;
     color: #fff;
+    font-family: Arial, sans-serif;
     text-align: center;
   }
 
@@ -18,9 +19,9 @@
 
   #gameArea {
     position: relative;
-    margin: 0 auto;
     width: 400px;
     height: 600px;
+    margin: auto;
     background: #222;
     border: 2px solid #555;
     overflow: hidden;
@@ -32,31 +33,48 @@
     height: 40px;
     background: #00ffcc;
     cursor: pointer;
+    user-select: none;
   }
 
-  #info {
-    margin-top: 10px;
-    font-size: 18px;
+  #controls {
+    margin: 10px;
   }
 </style>
 </head>
+
 <body>
 
 <h1>Falling Squares</h1>
+
+<div id="controls">
+  Speed:
+  <input type="range" id="speedSlider" min="1" max="10" value="4">
+  <span id="speedValue">4</span>
+</div>
+
 <div id="gameArea"></div>
-<div id="info">
+
+<p>
   Score: <span id="score">0</span> |
   Misses: <span id="misses">0</span> / 5
-</div>
+</p>
 
 <script>
   const gameArea = document.getElementById("gameArea");
   const scoreEl = document.getElementById("score");
   const missesEl = document.getElementById("misses");
+  const speedSlider = document.getElementById("speedSlider");
+  const speedValue = document.getElementById("speedValue");
 
   let score = 0;
   let misses = 0;
   let gameOver = false;
+  let speedMultiplier = 4;
+
+  speedSlider.oninput = () => {
+    speedMultiplier = Number(speedSlider.value);
+    speedValue.textContent = speedMultiplier;
+  };
 
   function createSquare() {
     if (gameOver) return;
@@ -71,20 +89,14 @@
     gameArea.appendChild(square);
 
     let y = -40;
-    const speed = 2 + Math.random() * 3;
 
-    const fallInterval = setInterval(() => {
-      if (gameOver) {
-        clearInterval(fallInterval);
-        square.remove();
-        return;
-      }
+    function fall() {
+      if (gameOver) return;
 
-      y += speed;
+      y += speedMultiplier;
       square.style.top = y + "px";
 
       if (y > gameArea.clientHeight) {
-        clearInterval(fallInterval);
         square.remove();
         misses++;
         missesEl.textContent = misses;
@@ -92,15 +104,19 @@
         if (misses >= 5) {
           endGame();
         }
+        return;
       }
-    }, 20);
 
-    square.onclick = () => {
-      clearInterval(fallInterval);
-      square.remove();
+      requestAnimationFrame(fall);
+    }
+
+    square.addEventListener("click", () => {
       score++;
       scoreEl.textContent = score;
-    };
+      square.remove();
+    });
+
+    requestAnimationFrame(fall);
   }
 
   function endGame() {
@@ -108,8 +124,9 @@
     alert("Game Over!\nFinal Score: " + score);
   }
 
-  setInterval(createSquare, 1000);
+  setInterval(createSquare, 900);
 </script>
 
 </body>
 </html>
+
