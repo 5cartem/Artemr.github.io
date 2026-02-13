@@ -1,7 +1,115 @@
-<iframe src="https://itch.io/embed-upload/XXXX"
-  width="800"
-  height="600"
-  frameborder="0">
-</iframe>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Falling Squares Game</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #fff;
+    text-align: center;
+  }
 
+  h1 {
+    margin: 10px 0;
+  }
 
+  #gameArea {
+    position: relative;
+    margin: 0 auto;
+    width: 400px;
+    height: 600px;
+    background: #222;
+    border: 2px solid #555;
+    overflow: hidden;
+  }
+
+  .square {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: #00ffcc;
+    cursor: pointer;
+  }
+
+  #info {
+    margin-top: 10px;
+    font-size: 18px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Falling Squares</h1>
+<div id="gameArea"></div>
+<div id="info">
+  Score: <span id="score">0</span> |
+  Misses: <span id="misses">0</span> / 5
+</div>
+
+<script>
+  const gameArea = document.getElementById("gameArea");
+  const scoreEl = document.getElementById("score");
+  const missesEl = document.getElementById("misses");
+
+  let score = 0;
+  let misses = 0;
+  let gameOver = false;
+
+  function createSquare() {
+    if (gameOver) return;
+
+    const square = document.createElement("div");
+    square.className = "square";
+
+    const x = Math.random() * (gameArea.clientWidth - 40);
+    square.style.left = x + "px";
+    square.style.top = "-40px";
+
+    gameArea.appendChild(square);
+
+    let y = -40;
+    const speed = 2 + Math.random() * 3;
+
+    const fallInterval = setInterval(() => {
+      if (gameOver) {
+        clearInterval(fallInterval);
+        square.remove();
+        return;
+      }
+
+      y += speed;
+      square.style.top = y + "px";
+
+      if (y > gameArea.clientHeight) {
+        clearInterval(fallInterval);
+        square.remove();
+        misses++;
+        missesEl.textContent = misses;
+
+        if (misses >= 5) {
+          endGame();
+        }
+      }
+    }, 20);
+
+    square.onclick = () => {
+      clearInterval(fallInterval);
+      square.remove();
+      score++;
+      scoreEl.textContent = score;
+    };
+  }
+
+  function endGame() {
+    gameOver = true;
+    alert("Game Over!\nFinal Score: " + score);
+  }
+
+  setInterval(createSquare, 1000);
+</script>
+
+</body>
+</html>
