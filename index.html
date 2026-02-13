@@ -2,57 +2,67 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Falling Squares Game</title>
+<title>5 Lane Rhythm Game</title>
 
 <style>
   body {
-    margin: 0;
-    background: #111;
-    color: #fff;
+    background: #0f0f1a;
+    color: white;
     font-family: Arial, sans-serif;
     text-align: center;
   }
 
-  h1 {
-    margin: 10px 0;
-  }
-
-  #gameArea {
-    position: relative;
-    width: 400px;
-    height: 600px;
-    margin: auto;
-    background: #222;
-    border: 2px solid #555;
-    overflow: hidden;
-  }
-
-  .square {
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    background: #00ffcc;
-    cursor: pointer;
-    user-select: none;
-  }
-
   #controls {
     margin: 10px;
+  }
+
+  #game {
+    position: relative;
+    width: 500px;
+    height: 600px;
+    margin: auto;
+    background: #111;
+    border: 2px solid #444;
+    display: flex;
+  }
+
+  .lane {
+    flex: 1;
+    border-left: 1px solid #333;
+    position: relative;
+  }
+
+  .block {
+    position: absolute;
+    width: 100%;
+    height: 40px;
+    cursor: pointer;
+  }
+
+  #hitLine {
+    position: absolute;
+    bottom: 100px;
+    width: 100%;
+    height: 4px;
+    background: red;
+    pointer-events: none;
   }
 </style>
 </head>
 
 <body>
 
-<h1>Falling Squares</h1>
+<h1>5 Lane Rhythm Game</h1>
 
 <div id="controls">
   Speed:
-  <input type="range" id="speedSlider" min="1" max="10" value="4">
-  <span id="speedValue">4</span>
+  <input type="range" id="speed" min="2" max="10" value="5">
+  <span id="speedVal">5</span>
 </div>
 
-<div id="gameArea"></div>
+<div id="game">
+  <div id="hitLine"></div>
+</div>
 
 <p>
   Score: <span id="score">0</span> |
@@ -60,73 +70,89 @@
 </p>
 
 <script>
-  const gameArea = document.getElementById("gameArea");
+  const game = document.getElementById("game");
   const scoreEl = document.getElementById("score");
   const missesEl = document.getElementById("misses");
-  const speedSlider = document.getElementById("speedSlider");
-  const speedValue = document.getElementById("speedValue");
+  const speedSlider = document.getElementById("speed");
+  const speedVal = document.getElementById("speedVal");
 
+  const lanes = [];
+  const colors = ["#ff4d4d", "#4dff4d", "#4dd2ff", "#ff4dff", "#ffd24d"];
+
+  let speed = 5;
   let score = 0;
   let misses = 0;
   let gameOver = false;
-  let speedMultiplier = 4;
 
   speedSlider.oninput = () => {
-    speedMultiplier = Number(speedSlider.value);
-    speedValue.textContent = speedMultiplier;
+    speed = Number(speedSlider.value);
+    speedVal.textContent = speed;
   };
 
-  function createSquare() {
+  // Create 5 lanes
+  for (let i = 0; i < 5; i++) {
+    const lane = document.createElement("div");
+    lane.className = "lane";
+    game.appendChild(lane);
+    lanes.push(lane);
+  }
+
+  function spawnBlock() {
     if (gameOver) return;
 
-    const square = document.createElement("div");
-    square.className = "square";
+    const laneIndex = Math.floor(Math.random() * 5);
+    const block = document.createElement("div");
+    block.className = "block";
+    block.style.background = colors[laneIndex];
+    block.style.top = "-40px";
 
-    const x = Math.random() * (gameArea.clientWidth - 40);
-    square.style.left = x + "px";
-    square.style.top = "-40px";
-
-    gameArea.appendChild(square);
+    lanes[laneIndex].appendChild(block);
 
     let y = -40;
 
     function fall() {
       if (gameOver) return;
 
-      y += speedMultiplier;
-      square.style.top = y + "px";
+      y += speed;
+      block.style.top = y + "px";
 
-      if (y > gameArea.clientHeight) {
-        square.remove();
+      // Missed
+      if (y > 560) {
+        block.remove();
         misses++;
         missesEl.textContent = misses;
-
-        if (misses >= 5) {
-          endGame();
-        }
+        if (misses >= 5) endGame();
         return;
       }
 
       requestAnimationFrame(fall);
     }
 
-    square.addEventListener("click", () => {
-      score++;
-      scoreEl.textContent = score;
-      square.remove();
-    });
+    block.onclick = () => {
+      const hitZoneTop = 460;
+      const hitZoneBottom = 540;
+
+      if (y >= hitZoneTop && y <= hitZoneBottom) {
+        score++;
+        scoreEl.textContent = score;
+      } else {
+        misses++;
+        missesEl.textContent = misses;
+        if (misses >= 5) endGame();
+      }
+      block.remove();
+    };
 
     requestAnimationFrame(fall);
   }
 
   function endGame() {
     gameOver = true;
-    alert("Game Over!\nFinal Score: " + score);
+    alert("Game Over!\nScore: " + score);
   }
 
-  setInterval(createSquare, 900);
+  setInterval(spawnBlock, 800);
 </script>
 
 </body>
 </html>
-
